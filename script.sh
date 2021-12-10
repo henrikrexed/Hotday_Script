@@ -141,7 +141,7 @@ kubectl -n hipster-shop apply -f hipstershop/k8s-manifest.yaml
 
 ## deploy active gate
 printf "\nDeployment of the Activegate...\n"
-kubectl create ns nondynatrace
+kubectl apply -f fluentd/service_account.yaml
 kubectl create secret docker-registry tenant-docker-registry --docker-server=${ENVIRONMENT_URL} --docker-username=${ENVIRONMENT_ID} --docker-password=${PAAS_TOKEN} -n nondynatrace
 kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n nondynatrace
 #### 6. Deploy active gate
