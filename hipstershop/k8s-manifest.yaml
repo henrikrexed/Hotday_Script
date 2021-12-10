@@ -271,7 +271,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-    - host :  "onlineboutique.IP_TO_REPLACE.nip.io"
+    - host :  "onlineboutique.domain.com"
       http:
         paths:
           - pathType: ImplementationSpecific

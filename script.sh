@@ -136,8 +136,6 @@ kubectl apply -f nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
 kubectl delete pod $PODID
 sleep 20
-##### 3. get the ip adress of the ingress gateway
-IP=$(kubectl get svc ngninx-nginx-ingress -ojson | jq -j '.status.loadBalancer.ingress[].ip')
 ##get the id of the cluster
 CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
 
@@ -147,7 +145,6 @@ kubectl create ns hipster-shop
 kubectl label namespace  default monitor=dynatrace
 kubectl label namespace hipster-shop   monitor=dynatrace
 kubectl -n hipster-shop create rolebinding default-view --clusterrole=view --serviceaccount=hipster-shop:default
-sed -i "s,IP_TO_REPLACE,$IP," hipstershop/k8s-manifest.yaml
 kubectl -n hipster-shop apply -f hipstershop/k8s-manifest.yaml
 
 ## deploy active gate
@@ -159,7 +156,6 @@ kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n
 sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," fluentd/fluentd-manifest.yaml
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," fluentd/fluentd-manifest.yaml
 sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," fluentd/activegate.yaml
-sed -i "s,IP_TO_REPLACE,$IP," fluentd/activegate.yaml
 
 printf "\nDeployment of the Fluentd...\n"
 kubectl apply -f fluentd/activegate.yaml
