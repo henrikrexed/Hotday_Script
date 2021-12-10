@@ -148,7 +148,7 @@ kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n
 sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," fluentd/fluentd-manifest.yaml
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," fluentd/fluentd-manifest.yaml
 sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," fluentd/activegate.yaml
-
+sed -i "s,IP_TO_REPLACE,$IP," fluentd/activegate.yaml
 ```
 printf "\nDeployment of the Fluentd...\n"
 kubectl apply -f fluentd/activegate.yaml
