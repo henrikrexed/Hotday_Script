@@ -57,13 +57,6 @@ if [ -z "$K8S_ENDPOINT" ]; then
   exit 1
 fi
 
-#Deployment of Helm
-printf "\nDeployment of Helm...\n"
-curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-sudo apt-get install apt-transport-https --yes
-echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
 
 
 ###Deploy dynatrace operator
@@ -106,7 +99,8 @@ json="$(
   "active": true,
   "certificateCheckEnabled": "false"
 }
-EOF)"
+EOF
+)"
 response=$(apiRequest "POST" "/config/v1/kubernetes/credentials" "${json}")
 
 if echo "$response" | grep -Fq "${CLUSTER_NAME}"; then
@@ -121,7 +115,7 @@ printf "\nDeployment of the Nginx Ingress controller...\n"
 helm repo add nginx-stable https://helm.nginx.com/stable
 helm install ngninx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config
 ## edit the nginx config map
-kubectl apply -f nginx\nginx-config.yaml
+kubectl apply -f nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
 kubectl delete pod $PODID
 
@@ -134,7 +128,8 @@ CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
 printf "\nDeployment of the Hipster-shop...\n"
 cd hipstershop
 kubectl create ns hipster-shop
-kubectl label hipster-shop default monitor=dynatrace
+kubectl label namespace  default monitor=dynatrace
+kubectl label namespace hipster-shop   monitor=dynatrace
 kubectl -n hipster-shop create rolebinding default-view --clusterrole=view --serviceaccount=hipster-shop:default
 sed -i "s,IP_TO_REPLACE,$IP," hipstershop/k8s-manifest.yaml
 kubectl -n hipster-shop apply -f hipstershop/k8s-manifest.yaml
@@ -149,11 +144,11 @@ sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," fluentd/fluentd-manifest.y
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," fluentd/fluentd-manifest.yaml
 sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," fluentd/activegate.yaml
 sed -i "s,IP_TO_REPLACE,$IP," fluentd/activegate.yaml
-```
+
 printf "\nDeployment of the Fluentd...\n"
 kubectl apply -f fluentd/activegate.yaml
 kubectl apply -f fluentd/fluentd-manifest.yaml
-```
+
 
 ## deploy prometheus operator
 printf "\nDeployment of the Prometheus Operator...\n"
