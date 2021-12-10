@@ -130,7 +130,7 @@ fi
 # Install of nginx ingress controller
 printf "\nDeployment of the Nginx Ingress controller...\n"
 helm repo add nginx-stable https://helm.nginx.com/stable
-helm install nginx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config
+helm install nginx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-type"="ip" --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-nlb-target-type"="external" --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-scheme"="internet-facing"
 ## edit the nginx config map
 kubectl apply -f nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
