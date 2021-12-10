@@ -135,7 +135,7 @@ helm install nginx nginx-stable/nginx-ingress --set controller.enableLatencyMetr
 kubectl apply -f nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
 kubectl delete pod $PODID
-
+sleep 20
 ##### 3. get the ip adress of the ingress gateway
 IP=$(kubectl get svc ngninx-nginx-ingress -ojson | jq -j '.status.loadBalancer.ingress[].ip')
 ##get the id of the cluster
