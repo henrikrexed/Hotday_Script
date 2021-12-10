@@ -50,6 +50,9 @@ if [ -z "$PAAS_TOKEN" ]; then
   echo "Error: paas-token not set!"
   exit 1
 fi
+
+
+
 CLUSTER_NAME="hotday"
 K8S_ENDPOINT="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')"
 if [ -z "$K8S_ENDPOINT" ]; then
@@ -57,6 +60,20 @@ if [ -z "$K8S_ENDPOINT" ]; then
   exit 1
 fi
 
+apiRequest() {
+  method=$1
+  url=$2
+  json=$3
+
+  curl_command="curl -k"
+  response="$(${curl_command} -sS -X ${method} "https://${ENVIRONMENT_URL}/api${url}" \
+    -H "accept: application/json; charset=utf-8" \
+    -H "Authorization: Api-Token ${API_TOKEN}" \
+    -H "Content-Type: application/json; charset=utf-8" \
+    -d "${json}")"
+
+  echo "$response"
+}
 
 
 ###Deploy dynatrace operator
@@ -113,7 +130,7 @@ fi
 # Install of nginx ingress controller
 printf "\nDeployment of the Nginx Ingress controller...\n"
 helm repo add nginx-stable https://helm.nginx.com/stable
-helm install ngninx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config
+helm install nginx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config
 ## edit the nginx config map
 kubectl apply -f nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
@@ -126,7 +143,6 @@ CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
 
 ##deploy hipster shop
 printf "\nDeployment of the Hipster-shop...\n"
-cd hipstershop
 kubectl create ns hipster-shop
 kubectl label namespace  default monitor=dynatrace
 kubectl label namespace hipster-shop   monitor=dynatrace
@@ -152,19 +168,6 @@ kubectl apply -f fluentd/fluentd-manifest.yaml
 
 ## deploy prometheus operator
 printf "\nDeployment of the Prometheus Operator...\n"
-helm install prometheus stable/prometheus-operator
+helm install prometheus  prometheus-community/kube-prometheus-stack
 
-apiRequest() {
-  method=$1
-  url=$2
-  json=$3
 
-  curl_command="curl -k"
-  response="$(${curl_command} -sS -X ${method} "https://${ENVIRONMENT_URL}/api${url}" \
-    -H "accept: application/json; charset=utf-8" \
-    -H "Authorization: Api-Token ${API_TOKEN}" \
-    -H "Content-Type: application/json; charset=utf-8" \
-    -d "${json}")"
-
-  echo "$response"
-}
