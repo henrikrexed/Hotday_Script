@@ -168,6 +168,7 @@ kubectl apply -f fluentd/fluentd-manifest.yaml
 
 ## deploy prometheus operator
 printf "\nDeployment of the Prometheus Operator...\n"
-helm install prometheus  prometheus-community/kube-prometheus-stack
-
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/prometheus
 
