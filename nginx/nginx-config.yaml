@@ -14,3 +14,4 @@ data:
   log-format: $remote_addr [$time_local] $request $status $body_bytes_sent $request_time
     $upstream_addr $upstream_response_time $proxy_host  $upstream_status $resource_name
     $resource_type $resource_namespace $service
+  main-snippet: load_module /opt/dynatrace/oneagent/agent/bin/current/linux-musl-x86-64/liboneagentnginx.so;

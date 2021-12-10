@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   name: kube-state-CLUSTERNAME_TOREPLACE
   annotations:
-    metrics.dynatrace.com/port: '8080'
+    metrics.dynatrace.com/port: TO_DEFINE
     metrics.dynatrace.com/scrape: 'true'
     metrics.dynatrace.com/path: '/metrics'
 spec:

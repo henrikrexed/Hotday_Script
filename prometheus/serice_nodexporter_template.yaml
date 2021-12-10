@@ -3,7 +3,7 @@ kind: Service
 metadata:
   annotations:
     metrics.dynatrace.com/path: /metrics
-    metrics.dynatrace.com/port: "9100"
+    metrics.dynatrace.com/port: TO_DEFINE
     metrics.dynatrace.com/scrape: "true"
   name: CLUSTERNAME_TOREPLACE-nodeexporter
 spec:
