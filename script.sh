@@ -116,11 +116,16 @@ json="$(
       "label": "Node events",
       "fieldSelector": "involvedObject.kind=Node",
       "active": true
+    },
+    {
+      "label": "Pod events",
+      "fieldSelector": "involvedObject.kind=Pod",
+      "active": true
     }
   ],
   "workloadIntegrationEnabled": true,
   "eventsIntegrationEnabled": true,
-  "activeGateGroup": "${CLUSTER_NAME}",
+  "activeGateGroup": "default",
   "authToken": "${K8S_BEARER}",
   "active": true,
   "certificateCheckEnabled": false,
