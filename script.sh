@@ -25,7 +25,7 @@ while [ $# -gt 0 ]; do
     ENVIRONMENT_ID="$2"
     shift 2
     ;;
-   --bastionuser)
+   --bastion-user)
     BASTION_USER="$2"
     shift 2
     ;;
