@@ -123,7 +123,7 @@ json="$(
   "activeGateGroup": "${CLUSTER_NAME}",
   "authToken": "${K8S_BEARER}",
   "active": true,
-  "certificateCheckEnabled": true,
+  "certificateCheckEnabled": false,
   "hostnameVerificationEnabled": false,
   "prometheusExportersIntegrationEnabled": true,
   "davisEventsIntegrationEnabled": true
