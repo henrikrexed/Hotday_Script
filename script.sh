@@ -5,6 +5,7 @@
 #### ENVIRONMENT_ID= Example: {your-environment-id}.live.dynatrace.com> , https://{your-domain}/e/{your-environment-id}/
 #### API_TOKEN : api token with the following right : metric ingest, trace ingest, and log ingest and Access problem and event feed, metrics and topology
 #### PAAS_TOKEN paas token
+#### BASTION_USER: linux user created for the bastion host
 #########################################################################################################
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -24,6 +25,10 @@ while [ $# -gt 0 ]; do
     ENVIRONMENT_ID="$2"
     shift 2
     ;;
+   --bastionuser)
+    BASTION_USER="$2"
+    shift 2
+    ;;
   *)
     echo "Warning: skipping unsupported option: $1"
     shift
@@ -31,12 +36,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ -z "ENVIRONMENT_URL" ]; then
+if [ -z "$ENVIRONMENT_URL" ]; then
   echo "Error: environment-url not set!"
   exit 1
 fi
 
-if [ -z "ENVIRONMENT_ID" ]; then
+if [ -z "$ENVIRONMENT_ID" ]; then
   echo "Error: environmentid not set!"
   exit 1
 fi
@@ -51,6 +56,10 @@ if [ -z "$PAAS_TOKEN" ]; then
   exit 1
 fi
 
+if [ -z "$BASTION_USER" ]; then
+  echo "Error: BASTION_USER not set!"
+  exit 1
+fi
 
 
 CLUSTER_NAME="hotday"
@@ -82,9 +91,9 @@ kubectl label namespace default monitor=dynatrace
 kubectl create namespace dynatrace
 kubectl apply -f https://github.com/Dynatrace/dynatrace-operator/releases/latest/download/kubernetes-csi.yaml
 kubectl -n dynatrace create secret generic dynakube --from-literal="apiToken=$API_TOKEN" --from-literal="paasToken=$PAAS_TOKEN"
-sed -i "s,ENVIRONMENT_URL,$ENVIRONMENT_URL," dynatrace/dynakube.yaml
+sed -i "s,ENVIRONMENT_URL,$ENVIRONMENT_URL," /home/$BASTION_USER/hotday_script/dynatrace/dynakube.yaml
 kubectl -n dynatrace wait pod --for=condition=ready -l internal.dynatrace.com/app=webhook --timeout=300s
-kubectl apply -n dynatrace -f dynatrace/dynakube.yaml
+kubectl apply -n dynatrace -f /home/$BASTION_USER/hotday_script/dynatrace/dynakube.yaml
 K8S_SECRET_NAME="$(for token in $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[*].name}' -n dynatrace); do echo "$token"; done | grep -F token)"
   if [ -z "$K8S_SECRET_NAME" ]; then
     echo "Error: failed to get kubernetes-monitoring secret!"
@@ -132,7 +141,7 @@ printf "\nDeployment of the Nginx Ingress controller...\n"
 helm repo add nginx-stable https://helm.nginx.com/stable
 helm install nginx nginx-stable/nginx-ingress --set controller.enableLatencyMetrics=true --set prometheus.create=true --set controller.config.name=nginx-config --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-type"="ip" --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-nlb-target-type"="external" --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-scheme"="internet-facing"
 ## edit the nginx config map
-kubectl apply -f nginx/nginx-config.yaml
+kubectl apply -f /home/$BASTION_USER/hotday_script/nginx/nginx-config.yaml
 PODID=$(kubectl get pods --output=jsonpath={.items..metadata.name} --selector=app=ngninx-nginx-ingress)
 kubectl delete pod $PODID
 sleep 20
@@ -145,21 +154,21 @@ kubectl create ns hipster-shop
 kubectl label namespace  default monitor=dynatrace
 kubectl label namespace hipster-shop   monitor=dynatrace
 kubectl -n hipster-shop create rolebinding default-view --clusterrole=view --serviceaccount=hipster-shop:default
-kubectl -n hipster-shop apply -f hipstershop/k8s-manifest.yaml
+kubectl -n hipster-shop apply -f /home/$BASTION_USER/hotday_script/hipstershop/k8s-manifest.yaml
 
 ## deploy active gate
 printf "\nDeployment of the Activegate...\n"
-kubectl apply -f fluentd/service_account.yaml
+kubectl apply -f /home/$BASTION_USER/hotday_script/fluentd/service_account.yaml
 kubectl create secret docker-registry tenant-docker-registry --docker-server=${ENVIRONMENT_URL} --docker-username=${ENVIRONMENT_ID} --docker-password=${PAAS_TOKEN} -n nondynatrace
 kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n nondynatrace
 #### 6. Deploy active gate
-sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," fluentd/fluentd-manifest.yaml
-sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," fluentd/fluentd-manifest.yaml
-sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," fluentd/activegate.yaml
+sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
+sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
+sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," /home/$BASTION_USER/hotday_script/fluentd/activegate.yaml
 
 printf "\nDeployment of the Fluentd...\n"
-kubectl apply -f fluentd/activegate.yaml
-kubectl apply -f fluentd/fluentd-manifest.yaml
+kubectl apply -f /home/$BASTION_USER/hotday_script/fluentd/activegate.yaml
+kubectl apply -f /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
 
 
 ## deploy prometheus operator
