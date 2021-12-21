@@ -191,4 +191,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm install prometheus prometheus-community/prometheus
 
-chown -R $BASTION_USER/ /home/$BASTION_USER/hotday_script
+## make the load test script executable
+chmod +x /home/$BASTION_USER/hotday_script/load/generateTraffic.sh
+## Change owner of the folder
+chown -R $BASTION_USER /home/$BASTION_USER/hotday_script
