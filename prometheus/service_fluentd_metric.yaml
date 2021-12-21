@@ -1,17 +1,18 @@
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: kube-state-CLUSTERNAME_TOREPLACE
+  labels:
+    app: fluentd-exporter
+  name: fluentd-prom-metrics
   annotations:
     metrics.dynatrace.com/port: "TO_DEFINE"
     metrics.dynatrace.com/scrape: 'true'
     metrics.dynatrace.com/path: '/metrics'
 spec:
   ports:
-    - name: kube-port
-      targetPort: kube-port
+    - port: 9914
+      name: fluentdprom
+      targetPort: fluentdprom
       protocol: TCP
-      port: 8080
   selector:
-          app.kubernetes.io/name: kube-state-metrics
-  clusterIP: None
+    app: fluentd-pipeline

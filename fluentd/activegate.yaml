@@ -1,7 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: onlineboutique-ingress
+  name: activegate-ingress
+  namespace: nondynatrace
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:

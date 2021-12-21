@@ -11,122 +11,101 @@ data:
   AG_INGEST_URL: "https://fluentd-activegate:9999/e/ENVIRONMENT_ID_TO_REPLACE/api/v2/logs/ingest"
   fluent.conf: |-
     # Ingest logs from nodes
-    <match fluent.**>
+     <match fluent.**>
       @type null
-    </match>
+     </match>
 
-    <source>
-      @type tail
-      path /var/log/containers/*nginx*.log
-      pos_file /var/log/fluentd.pos
-      time_format %Y-%m-%dT%H:%M:%S.%NZ
-      tag nginx
-      <parse>
-        @type nginx
-        key_name log
-        reserve_data yes
-        expression  /^(?<logtime>\S+)\s+(?<logtype>\S+)\s+(?<type>\w+)\s+(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<ressourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<ressource_type>\S*)\s+(?<ressource_namesapce>\S*)\s+(?<service>\w*)/
-        types ip:string,time_local:string,method:string,request:string,httpversion:string,status:integer,bytes_sent:integer,responsetime:float,request_time:float,proxy:string,upstream_responsetime:float,ressourcename:string,ressource_type:string,ressource_namesapce:string,service:string
-        time_format %d/%b/%Y:%H:%M:%S %z
-      </parse>
-      read_from_head true
-      keep_time_key true
-    </source>
-    <source>
+     <source>
+       @type tail
+       path /var/log/containers/*nginx*.log
+       pos_file /var/log/fluentd.pos
+       time_format %Y-%m-%dT%H:%M:%S.%NZ
+       read_from_head true
+       tag nginx
+       keep_time_key true
+     <parse>
+       @type nginx
+       reserve_data yes
+       expression  /^(?<logtime>\S+)\s+(?<logtype>\S+)\s+(?<type>\w+)\s+(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<ressourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<ressource_type>\S*)\s+(?<ressource_namesapce>\S*)\s+(?<service>\w*)/
+       types ip:string,time_local:string,method:string,request:string,httpversion:string,status:integer,bytes_sent:integer,responsetime:float,request_time:float,proxy:string,upstream_responsetime:float,ressourcename:string,ressource_type:string,ressource_namesapce:string,service:string
+       time_key time_local
+       time_format %d/%b/%Y:%H:%M:%S %z
+     </parse>
+
+     </source>
+     <source>
        @type prometheus
        bind 0.0.0.0
        port 9914
        metrics_path /metrics
-    </source>
+     </source>
 
-    <filter  nginx>
+     <filter **>
+       @type kubernetes_metadata
+     </filter>
+
+     <filter  nginx>
       @type prometheus
-      <labels>
-        method ${method}
-        request ${request}
-        status ${status}
-        namespace ${ressource_namesapce}
-        service ${service}
-        ressourcename ${ressourcename}
-      </labels>
-      <metric>
-        name response_time
-        type gauge
-        desc responset time
-        key responsetime
-      </metric>
-      <metric>
-        name byte_sent
-        type gauge
-        desc byte sent
-        key bytes_sent
-      </metric>
-      <metric>
-        name requests
-        type counter
-        desc The total number of request
-      </metric>
-      <metric>
-        name status
-        type counter
-        desc status code
-        key status
-      </metric>
-    </filter>
+       <labels>
+         method ${method}
+         request ${request}
+         status ${status}
+         namespace ${ressource_namesapce}
+         service ${service}
+         ressourcename ${ressourcename}
+       </labels>
+       <metric>
+         name response_time
+         type gauge
+         desc responset time
+         key responsetime
+       </metric>
+       <metric>
+         name byte_sent
+         type gauge
+         desc byte sent
+         key bytes_sent
+       </metric>
+       <metric>
+         name requests
+         type counter
+         desc The total number of request
+       </metric>
+       <metric>
+         name status
+         type counter
+         desc status code
+         key status
+       </metric>
+     </filter>
 
+     <filter nginx>
+        @type grep
+          <exclude>
+          key service
+          pattern /^$/
+          # or, to exclude all messages that are empty or include only white-space:
+          </exclude>
+     </filter>
 
-    <match nginx>
-        @type  stdout
-    </match>
+     <filter nginx>
+       @type record_transformer
+       enable_ruby true
+       <record>
+         status ${ record.dig(:log, :severity) || record.dig(:log, :level) || (record["log"] =~ /\W?\berror\b\W?/i ? "ERROR" : (record["log"] =~ /\W?\bwarn\b\W?/i ? "WARN" : (record["log"] =~ /\W?\bdebug\b\W?/i ? "DEBUG" : (record["log"] =~ /\W?\binfo\b\W?/i ? "INFO" : "NONE")))) }
+         content ${record["method"]} ${record["request"]} ${record["status"]} ${record["service"]} ${record["bytes_sent"]} ${record["responsetime"]} ${record["service"]}
+         dt.kubernetes.node.system_uuid ${File.read("/sys/devices/virtual/dmi/id/product_uuid").strip}
+         dt.kubernetes.cluster.id "#{ENV['CLUSTER_ID']}"
+         k8s.namespace.name ${record["ressource_namesapce"]}
+         k8s.service.name ${record["service"]}
+       </record>
+       remove_keys  nginx
+     </filter>
 
-    # Detect exceptions in the log output and forward them as one log entry.
-    <match nginx>
-      @id nginx
-      @type detect_exceptions
-      remove_tag_prefix nginx
-      message log
-      stream logtype
-      multiline_flush_interval 5
-      max_bytes 500000
-      max_lines 1000
-    </match>
-    # Concatenate multi-line logs
-    <filter **>
-      @id filter_concat
-      @type concat
-      key message
-      multiline_end_regexp /\n$/
-      separator ""
-    </filter>
-    # Enrich with kubernetes metadata
-
-    # Transform metadata to records
-    <filter kubernetes.**>
-      @type record_transformer
-      enable_ruby true
-        <record>
-          status ${ record.dig(:log, :severity) || record.dig(:log, :level) || (record["log"] =~ /\W?\berror\b\W?/i ? "ERROR" : (record["log"] =~ /\W?\bwarn\b\W?/i ? "WARN" : (record["log"] =~ /\W?\bdebug\b\W?/i ? "DEBUG" : (record["log"] =~ /\W?\binfo\b\W?/i ? "INFO" : "NONE")))) }
-          content ${record["log"]}
-          container.name ${record.dig("kubernetes","container_name")}
-          container.image.name ${record.dig("kubernetes","container_image").split(':')[0]}
-          container.image.tag ${record.dig("kubernetes","container_image").split(':')[1]}
-          dt.kubernetes.node.name ${record.dig("kubernetes","host")}
-          dt.kubernetes.node.system_uuid ${File.read("/sys/devices/virtual/dmi/id/product_uuid").strip}
-          k8s.pod.labels ${record.dig("kubernetes","labels")}
-          dt.kubernetes.cluster.id "#{ENV['CLUSTER_ID']}"
-          k8s.namespace.uid ${record.dig("kubernetes","namespace_id")}
-          k8s.namespace.name ${ressource_namesapce}
-          k8s.pod.name ${record.dig("kubernetes","pod_name")}
-          k8s.pod.uid ${record.dig("kubernetes","pod_id")}
-        </record>
-        remove_keys log, stream, docker, kubernetes
-    </filter>
-
-
-    <match kubernetes.**>
-      @type              dynatrace
-      active_gate_url "#{ENV['AG_INGEST_URL']}"
-      api_token "#{ENV['LOG_INGEST_TOKEN']}"
-      ssl_verify_none    true
-    </match>
----
+     <match nginx>
+       @type              dynatrace
+       active_gate_url "#{ENV['AG_INGEST_URL']}"
+       api_token "#{ENV['LOG_INGEST_TOKEN']}"
+       ssl_verify_none    true
+     </match>
+  ---

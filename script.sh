@@ -173,6 +173,12 @@ kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n
 sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
 sed -i "s,ENVIRONMENT_URL_TO_REPLACE,$ENVIRONMENT_URL," /home/$BASTION_USER/hotday_script/fluentd/activegate.yaml
+### edit the various fluentd pipeline
+sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-configmap-prom-stdout.yaml
+sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-configmap-prom-stdout.yaml
+sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-configmap-dynatrace.yaml
+sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-configmap-dynatrace.yaml
+
 
 printf "\nDeployment of the Fluentd...\n"
 kubectl apply -f /home/$BASTION_USER/hotday_script/fluentd/activegate.yaml
@@ -185,3 +191,4 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm install prometheus prometheus-community/prometheus
 
+chown -R $BASTION_USER/ /home/$BASTION_USER/hotday_script
