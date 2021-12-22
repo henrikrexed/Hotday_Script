@@ -25,8 +25,9 @@ data:
         @type nginx
         key_name log
         reserve_data yes
-        expression  /^(?<logtime>\S+)\s+(?<logtype>\S+)\s+(?<type>\w+)\s+(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<ressourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<ressource_type>\S*)\s+(?<ressource_namesapce>\S*)\s+(?<service>\w*)/
+        expression  /^(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<ressourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<ressource_type>\S*)\s+(?<ressource_namesapce>\S*)\s+(?<service>\w*)/
         types ip:string,time_local:string,method:string,request:string,httpversion:string,status:integer,bytes_sent:integer,responsetime:float,request_time:float,proxy:string,upstream_responsetime:float,ressourcename:string,ressource_type:string,ressource_namesapce:string,service:string
+        time_key time_local
         time_format %d/%b/%Y:%H:%M:%S %z
       </parse>
       read_from_head true
@@ -50,24 +51,24 @@ data:
        ressourcename ${ressourcename}
      </labels>
      <metric>
-       name response_time
+       name hotday_response_time
        type gauge
        desc responset time
        key responsetime
      </metric>
      <metric>
-       name byte_sent
+       name hotday_byte_sent
        type gauge
        desc byte sent
        key bytes_sent
      </metric>
      <metric>
-       name requests
+       name hotday_requests
        type counter
        desc The total number of request
      </metric>
      <metric>
-       name status
+       name hotday_status
        type counter
        desc status code
        key status
