@@ -108,4 +108,3 @@ data:
        api_token "#{ENV['LOG_INGEST_TOKEN']}"
        ssl_verify_none    true
      </match>
-  ---

@@ -46,7 +46,7 @@ fi
 ###################################################
 
 # url to the order app
-url="http://$(kubectl get ingress onlineboutique-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+url="http://$(kubectl get ingress onlineboutique-ingress -n hipster-shop -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' )"
 host="onlineboutique.domain.com"
 # Set Dynatrace Test Headers Values
 loadScriptName="loadtest.sh"

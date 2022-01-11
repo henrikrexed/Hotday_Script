@@ -169,6 +169,15 @@ printf "\nDeployment of the Activegate...\n"
 kubectl apply -f /home/$BASTION_USER/hotday_script/fluentd/service_account.yaml
 kubectl create secret docker-registry tenant-docker-registry --docker-server=${ENVIRONMENT_URL} --docker-username=${ENVIRONMENT_ID} --docker-password=${PAAS_TOKEN} -n nondynatrace
 kubectl create secret generic tokens --from-literal="log-ingest=${API_TOKEN}" -n nondynatrace
+
+## Create tls certificate
+printf "\nCreate the TLS cerficte for the Activegate...\n"
+openssl genrsa -out perform-ingress.key 2048
+openssl req -new -key perform-ingress.key -out perform-ingress.csr -subj "/CN=activegate.domain.com"
+openssl x509 -req -days 365 -in perform-ingress.csr -signkey perform-ingress.key -out perform-ingress.crt
+kubectl create secret tls perform-ingress --cert perform-ingress.crt --key perform-ingress.key -n nondynatrace
+
+
 #### 6. Deploy active gate
 sed -i "s,ENVIRONMENT_ID_TO_REPLACE,$ENVIRONMENT_ID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," /home/$BASTION_USER/hotday_script/fluentd/fluentd-manifest.yaml
