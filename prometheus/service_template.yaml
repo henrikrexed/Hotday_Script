@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: kube-state-CLUSTERNAME_TOREPLACE
+  name: hotday-kube-state
   annotations:
     metrics.dynatrace.com/port: "TO_DEFINE"
     metrics.dynatrace.com/scrape: 'true'

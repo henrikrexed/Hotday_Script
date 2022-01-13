@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: ngninx-exporter
-  name: nginx-prom-metrics
+  name: hotday-nginx-prom-metrics
   annotations:
     metrics.dynatrace.com/scrape: "true"
     metrics.dynatrace.com/port: "TO_DEFINE"

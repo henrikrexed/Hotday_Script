@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: fluentd-exporter
-  name: fluentd-prom-metrics
+  name: hotday-fluentd-prom-metrics
   annotations:
     metrics.dynatrace.com/port: "TO_DEFINE"
     metrics.dynatrace.com/scrape: 'true'

@@ -5,7 +5,7 @@ metadata:
     metrics.dynatrace.com/path: "/metrics"
     metrics.dynatrace.com/port: "TO_DEFINE"
     metrics.dynatrace.com/scrape: "true"
-  name: CLUSTERNAME_TOREPLACE-nodeexporter
+  name: hotday-nodeexporter
 spec:
   clusterIP: None
   ports:
