@@ -1,5 +1,5 @@
 #!/bin/sh
-#Deployment of Helm
+#Deployment of Hellm
 printf "\nDeployment of Helm...\n"
 curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
 apt-get install apt-transport-https --yes

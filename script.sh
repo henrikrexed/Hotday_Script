@@ -5,7 +5,7 @@
 #### ENVIRONMENT_ID= Example: {your-environment-id}.live.dynatrace.com> , https://{your-domain}/e/{your-environment-id}/
 #### API_TOKEN : api token with the following right : metric ingest, trace ingest, and log ingest and Access problem and event feed, metrics and topology
 #### PAAS_TOKEN paas token
-#### BASTION_USER: linux user created for the bastion host
+#### BASTION_USER: linux user created for the bastion  host
 #########################################################################################################
 while [ $# -gt 0 ]; do
   case "$1" in
