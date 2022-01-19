@@ -2,7 +2,7 @@
 ###########################################################################################################
 ####  Required Environment variable :
 #### duration duration of the test in seconds( default 120)
-#### thinktime thinktime in seconds  (default 5 )
+#### thinktime thinktime in seconds  (default 5  )
 #########################################################################################################
 while [ $# -gt 0 ]; do
   case "$1" in
