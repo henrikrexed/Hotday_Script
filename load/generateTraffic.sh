@@ -2,7 +2,7 @@
 ###########################################################################################################
 ####  Required Environment variable :
 #### duration duration of the test in seconds( default 120)
-#### thinktime thinktime in seconds  (default 5  )
+#### thinktime thinktime in seconds  (default 3  )
 #########################################################################################################
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -22,20 +22,20 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$duration" ]; then
-  duration=120
+  duration=14400
 else
   if [ $duration -lt 1 ]
   then
-    duration=120
+    duration=14400
   fi
 fi
 
 if [ -z "$thinktime" ]; then
-  thinktime=5
+  thinktime=3
 else
   if [ $thinktime -lt 1 ]
   then
-    thinktime=5
+    thinktime=3
   fi
 fi
 

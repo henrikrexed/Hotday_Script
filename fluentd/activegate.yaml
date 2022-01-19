@@ -6,8 +6,6 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
-  tls:
-    - secret-name: perform-ingress
   rules:
     - host :  "activegate.domain.com"
       http:
