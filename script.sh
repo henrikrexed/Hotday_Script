@@ -89,7 +89,7 @@ apiRequest() {
 printf "\nDeployment of the Dynatrace Operator...\n"
 kubectl label namespace default monitor=dynatrace
 kubectl create namespace dynatrace
-kubectl apply -f https://github.com/Dynatrace/dynatrace-operator/releases/latest/download/kubernetes-csi.yaml
+kubectl apply -f  https://github.com/Dynatrace/dynatrace-operator/releases/download/v0.3.0/kubernetes-csi.yaml
 kubectl -n dynatrace create secret generic dynakube --from-literal="apiToken=$API_TOKEN" --from-literal="paasToken=$PAAS_TOKEN"
 sed -i "s,ENVIRONMENT_URL,$ENVIRONMENT_URL," /home/$BASTION_USER/hotday_script/dynatrace/dynakube.yaml
 kubectl -n dynatrace wait pod --for=condition=ready -l internal.dynatrace.com/app=webhook --timeout=300s
