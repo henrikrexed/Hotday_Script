@@ -22,7 +22,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$duration" ]; then
-  duration=14400
+  duration=14450
 else
   if [ $duration -lt 1 ]
   then

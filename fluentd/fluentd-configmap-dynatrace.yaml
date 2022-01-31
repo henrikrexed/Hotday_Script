@@ -26,8 +26,8 @@ data:
      <parse>
        @type nginx
        reserve_data yes
-       expression  /^(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<ressourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<ressource_type>\S*)\s+(?<ressource_namespace>\S*)\s+(?<service>\w*)/
-       types ip:string,time_local:string,method:string,request:string,httpversion:string,status:integer,bytes_sent:integer,responsetime:float,request_time:float,proxy:string,upstream_responsetime:float,ressourcename:string,ressource_type:string,ressource_namespace:string,service:string
+       expression  /^(?<ip>\S+)\s+\[(?<time_local>[^\]]*)\]\s+(?<method>\S+)\s+(?<request>\S+)\s+(?<httpversion>\S*)\s+(?<status>\S*)\s+(?<bytes_sent>\S*)\s+(?<responsetime>\S*)\s+(?<proxy>\S*)\s+(?<upstream_responsetime>\S*)\s+(?<resourcename>\S*)\s+(?<upstream_status>\S*)\s+(?<ingress_name>\S*)\s+(?<resource_type>\S*)\s+(?<resource_namespace>\S*)\s+(?<service>\w*)/
+       types ip:string,time_local:string,method:string,request:string,httpversion:string,status:string,bytes_sent:integer,responsetime:float,proxy:string,upstream_responsetime:integer,resourcename:string,upstream_status:string,ingress_name:string,resource_type:string,resource_namespace:string,service:string
        time_key time_local
        time_format %d/%b/%Y:%H:%M:%S %z
      </parse>
@@ -50,14 +50,14 @@ data:
          method ${method}
          request ${request}
          status ${status}
-         namespace ${ressource_namespace}
+         namespace ${resource_namespace}
          service ${service}
-         ressourcename ${ressourcename}
+         ressourcename ${resourcename}
        </labels>
        <metric>
          name hotday_response_time
          type gauge
-         desc responset time
+         desc response time
          key responsetime
        </metric>
        <metric>
@@ -96,7 +96,7 @@ data:
          content ${record["method"]} ${record["request"]} ${record["status"]} ${record["service"]} ${record["bytes_sent"]} ${record["responsetime"]} ${record["service"]}
          dt.kubernetes.node.system_uuid ${File.read("/sys/devices/virtual/dmi/id/product_uuid").strip}
          dt.kubernetes.cluster.id "#{ENV['CLUSTER_ID']}"
-         k8s.namespace.name ${record["ressource_namespace"]}
+         k8s.namespace.name ${record["resource_namespace"]}
          k8s.service.name ${record["service"]}
        </record>
        remove_keys  nginx
