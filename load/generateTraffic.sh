@@ -26,7 +26,7 @@ if [ -z "$duration" ]; then
 else
   if [ $duration -lt 1 ]
   then
-    duration=14400
+    duration=14450
   fi
 fi
 
